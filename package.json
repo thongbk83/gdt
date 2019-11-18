@@ -1,0 +1,22 @@
+{
+  "name": "mst",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "convert-array-to-csv": "^1.0.9",
+    "csv-writer": "^1.5.0",
+    "express": "^4.17.1",
+    "jquery": "^3.4.1",
+    "jsdom": "^15.2.1",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5",
+    "xlsx": "^0.15.2"
+  }
+}
