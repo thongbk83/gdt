@@ -1,6 +1,7 @@
 var request = require("request");
 const jsdom = require("jsdom");
 const axios = require("axios");
+const cities = require("./cities");
 const rp = require("request-promise");
 const fs = require("fs");
 
@@ -14,20 +15,29 @@ const urlDistrict =
 const urlWard =
   "http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue="; //ma~ huyen
 
-const limitRows = 100;
+const limitRows = 100; //default 100;
 var idTinh;
 let rows;
-let urls;
 let rowsData = [];
+let cityName = "";
+let urlObject = {
+  cityName: "",
+  districtName: "",
+  wardName: "",
+  url: ""
+};
+
+let urlsObject = [];
+
 const fetchData = async id => {
   idTinh = id;
-  urls = [];
   rowsData = [];
+  let cityObject = cities.find(city => city.id === id);
+  cityName = cityObject ? cityObject.title : "";
   await getUrlsByCityId(id);
 };
 
 getUrlsByCityId = async cityId => {
-  let urls = [];
   const resDistrict = await getDistricts(cityId);
   const districts = resDistrict.data;
   await sleep(3000);
@@ -37,15 +47,23 @@ getUrlsByCityId = async cityId => {
 
 const getEntireXa = (index, districts, cityId) => {
   if (index >= districts.length) {
-    console.log(urls.length, 40);
-    writeUrlToJsonFile(urls, `${cityId}.json`);
+    console.log(urlsObject.length, 40);
+    writeUrlToJsonFile(urlsObject, `${cityName}.json`);
     fetchEntireDataByUrls(0);
   } else {
     getWards(districts[index].id).then(res => {
       console.log(index, cityId);
+
       res.data.forEach(ward => {
         const url = `http://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=11&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
-        urls.push(url);
+
+        let urlObject = {
+          cityName: cityName,
+          districtName: districts[index].title,
+          wardName: ward.title,
+          url: url
+        };
+        urlsObject.push(urlObject);
       });
       sleep(2000).then(() => getEntireXa(index + 1, districts, cityId));
     });
@@ -66,8 +84,7 @@ const writeUrlToJsonFile = (rows, name) => {
 };
 
 const fetchEntireDataByUrls = index => {
-  //urls.length
-  if (index >= urls.length) {
+  if (index >= urlsObject.length) {
     writeToExcel(rowsData, `${idTinh}.xlsx`);
     console.log("job done");
     process.exit();
@@ -77,33 +94,33 @@ const fetchEntireDataByUrls = index => {
     console.log("write file: ", name);
     writeToExcel(rowsData, name);
     rowsData = [];
-    fetchEntireUsersByUrl(1, urls[index], index);
+    fetchEntireUsersByUrlObject(1, urlsObject[index], index);
   } else {
-    console.log(65, urls[index], index);
-    fetchEntireUsersByUrl(1, urls[index], index);
+    console.log(65, urlsObject[index], index);
+    fetchEntireUsersByUrlObject(1, urlsObject[index], index);
   }
 };
 
-const fetchEntireUsersByUrl = async (pageNo, url, urlIndex) => {
+const fetchEntireUsersByUrlObject = async (pageNo, urlObject, urlIndex) => {
   await sleep(5000);
   try {
-    const actualUrl = url + `&pageNumber=${pageNo}`;
+    const actualUrl = urlObject.url + `&pageNumber=${pageNo}`;
     const html = await rp(actualUrl);
-    rows = await parseData(html);
-    console.log(pageNo);
+    rows = await parseData(html, urlObject);
+    console.log("page: ", pageNo);
     if (!rows || [].concat(...rows).length === 0) {
       fetchEntireDataByUrls(urlIndex + 1);
     } else {
       rowsData = rowsData.concat(rows);
-      fetchEntireUsersByUrl(pageNo + 1, url, urlIndex);
+      fetchEntireUsersByUrlObject(pageNo + 1, urlObject, urlIndex);
     }
   } catch (error) {
     console.log(error);
-    fetchEntireUsersByUrl(pageNo + 1, url, urlIndex);
+    fetchEntireUsersByUrlObject(pageNo + 1, urlObject, urlIndex);
   }
 };
 
-function parseData(html) {
+function parseData(html, urlObject) {
   return new Promise(resolve => {
     const { JSDOM } = jsdom;
     const dom = new JSDOM(html);
@@ -142,6 +159,14 @@ function parseData(html) {
               .each(function(index) {
                 result.push($(this).text());
               });
+            if (result && result.length > 0) {
+              result = result.concat([
+                urlObject.cityName,
+                urlObject.districtName,
+                urlObject.wardName
+              ]);
+            }
+
             rows.push(result);
           });
       });
@@ -149,6 +174,53 @@ function parseData(html) {
     return resolve(rows);
   });
 }
+
+// function parseData(html) {
+//   return new Promise(resolve => {
+//     const { JSDOM } = jsdom;
+//     const dom = new JSDOM(html);
+//     const $ = require("jquery")(dom.window);
+//     //let's start extracting the data
+//     cols = [];
+//     rows = [];
+//     content = "";
+//     if ($(html).find("table").length == 0) {
+//       return resolve(false);
+//     }
+
+//     $(html)
+//       .find("table")
+//       .each(function(index, element) {
+//         $(this)
+//           .find("th")
+//           .each(function(index, element) {
+//             cols.push(
+//               $(this)
+//                 .text()
+//                 .toLowerCase()
+//             );
+//           });
+//       });
+
+//     $(html)
+//       .find("table")
+//       .each(function(index, element) {
+//         $(this)
+//           .find("tr")
+//           .each(function(index, element) {
+//             result = [];
+//             $(this)
+//               .find("td")
+//               .each(function(index) {
+//                 result.push($(this).text());
+//               });
+//             rows.push(result);
+//           });
+//       });
+
+//     return resolve(rows);
+//   });
+// }
 
 function writeToExcel(rows, name) {
   const XLSX = require("xlsx");
