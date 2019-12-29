@@ -4,6 +4,7 @@ const axios = require("axios");
 const cities = require("./cities");
 const rp = require("request-promise");
 const fs = require("fs");
+var cheerio = require("cheerio");
 
 const options = {
   headers: { "content-type": "application/json charset=utf-8" }
@@ -55,7 +56,7 @@ const getEntireXa = (index, districts, cityId) => {
       console.log(index, cityId);
 
       res.data.forEach(ward => {
-        const url = `http://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=11&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
+        const url = `http://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=10&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
 
         let urlObject = {
           cityName: cityName,
@@ -106,6 +107,7 @@ const fetchEntireUsersByUrlObject = async (pageNo, urlObject, urlIndex) => {
   try {
     const actualUrl = urlObject.url + `&pageNumber=${pageNo}`;
     const html = await rp(actualUrl);
+
     rows = await parseData(html, urlObject);
     console.log("page: ", pageNo);
     if (!rows || [].concat(...rows).length === 0) {
@@ -124,53 +126,57 @@ function parseData(html, urlObject) {
   return new Promise(resolve => {
     const { JSDOM } = jsdom;
     const dom = new JSDOM(html);
-    const $ = require("jquery")(dom.window);
+    //const $ = require("jquery")(dom.window);
     //let's start extracting the data
+
+    const $1 = cheerio.load(html);
+    const tables = $1("table");
+
+    //console.log(130, $(html).find("table").length);
     cols = [];
     rows = [];
     content = "";
-    if ($(html).find("table").length == 0) {
+
+    //console.log(133, dom);
+    if (tables.length == 0) {
+      console.log(134);
       return resolve(false);
     }
 
-    $(html)
-      .find("table")
-      .each(function(index, element) {
-        $(this)
-          .find("th")
-          .each(function(index, element) {
-            cols.push(
-              $(this)
-                .text()
-                .toLowerCase()
-            );
-          });
-      });
+    tables.each(function(index, element) {
+      $1(this)
+        .find("th")
+        .each(function(index, element) {
+          cols.push(
+            $1(this)
+              .text()
+              .toLowerCase()
+          );
+        });
+    });
 
-    $(html)
-      .find("table")
-      .each(function(index, element) {
-        $(this)
-          .find("tr")
-          .each(function(index, element) {
-            result = [];
-            $(this)
-              .find("td")
-              .each(function(index) {
-                result.push($(this).text());
-              });
-            if (result && result.length > 0) {
-              result = result.concat([
-                urlObject.cityName,
-                urlObject.districtName,
-                urlObject.wardName
-              ]);
-            }
+    tables.each(function(index, element) {
+      $1(this)
+        .find("tr")
+        .each(function(index, element) {
+          result = [];
+          $1(this)
+            .find("td")
+            .each(function(index) {
+              result.push($1(this).text());
+            });
+          if (result && result.length > 0) {
+            result = result.concat([
+              urlObject.cityName,
+              urlObject.districtName,
+              urlObject.wardName
+            ]);
+          }
 
-            rows.push(result);
-          });
-      });
-
+          rows.push(result);
+        });
+    });
+    console.log(179, rows.length);
     return resolve(rows);
   });
 }
