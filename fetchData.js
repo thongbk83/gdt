@@ -1,14 +1,19 @@
 var request = require("request");
 const jsdom = require("jsdom");
 const axios = require("axios");
+const https = require('https');
 const cities = require("./cities");
 const rp = require("request-promise");
 const fs = require("fs");
 var cheerio = require("cheerio");
 
-const options = {
-  headers: { "content-type": "application/json charset=utf-8" }
-};
+
+
+const agent = new https.Agent({  
+  rejectUnauthorized: false
+});
+
+const options = { httpsAgent: agent }
 
 const urlCity = "http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_TINH";
 const urlDistrict =
@@ -39,7 +44,7 @@ const fetchData = async id => {
 };
 
 getUrlsByCityId = async cityId => {
-  const resDistrict = await getDistricts(cityId);
+   const resDistrict = await getDistricts(cityId);
   const districts = resDistrict.data;
   await sleep(3000);
 
@@ -240,15 +245,15 @@ function writeToExcel(rows, name) {
 
 const getDistricts = cityId => {
   return axios.get(
-    `http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
-    options
+    `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
+    { httpsAgent: agent }
   );
 };
 
 const getWards = districtId => {
   return axios.get(
-    `http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue=${districtId}`,
-    options
+    `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue=${districtId}`,
+    { httpsAgent: agent }
   );
 };
 
