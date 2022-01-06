@@ -15,11 +15,11 @@ const agent = new https.Agent({
 
 const options = { httpsAgent: agent }
 
-const urlCity = "http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_TINH";
+const urlCity = "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_TINH";
 const urlDistrict =
-  "http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh="; // ma tinh
+  "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh="; // ma tinh
 const urlWard =
-  "http://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue="; //ma~ huyen
+  "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue="; //ma~ huyen
 
 const limitRows = 100; //default 100;
 var idTinh;
@@ -53,7 +53,7 @@ getUrlsByCityId = async cityId => {
 
 const getEntireXa = (index, districts, cityId) => {
   if (index >= districts.length) {
-    console.log(urlsObject.length, 40);
+    console.log(56,urlsObject.length);
     writeUrlToJsonFile(urlsObject, `${cityName}.json`);
     fetchEntireDataByUrls(0);
   } else {
@@ -61,7 +61,7 @@ const getEntireXa = (index, districts, cityId) => {
       console.log(index, cityId);
 
       res.data.forEach(ward => {
-        const url = `http://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=10&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
+        const url = `https://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=10&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
 
         let urlObject = {
           cityName: cityName,
@@ -111,9 +111,9 @@ const fetchEntireUsersByUrlObject = async (pageNo, urlObject, urlIndex) => {
   await sleep(5000);
   try {
     const actualUrl = urlObject.url + `&pageNumber=${pageNo}`;
-    const html = await rp(actualUrl);
+    const htmlData = await axios.get(actualUrl,{ httpsAgent: agent });
 
-    rows = await parseData(html, urlObject);
+    rows = await parseData(htmlData.data, urlObject);
     console.log("page: ", pageNo);
     if (!rows || [].concat(...rows).length === 0) {
       fetchEntireDataByUrls(urlIndex + 1);
@@ -234,13 +234,14 @@ function parseData(html, urlObject) {
 // }
 
 function writeToExcel(rows, name) {
+  console.log(237);
   const XLSX = require("xlsx");
   var wb = XLSX.utils.book_new();
   var ws_name = "SheetJS";
   var ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, ws_name);
   XLSX.writeFile(wb, name);
-  console.log(159);
+  console.log(244);
 }
 
 const getDistricts = cityId => {
