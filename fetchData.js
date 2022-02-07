@@ -15,17 +15,19 @@ const agent = new https.Agent({
 
 const options = { httpsAgent: agent }
 
-const headers = { 
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
-  'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
-}
-
 const urlCity = "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_TINH";
 const urlDistrict =
   "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh="; // ma tinh
 const urlWard =
   "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue="; //ma~ huyen
+
+const Cookie = 'D1N=23d136bd33431ff3f022b182abba219b; JSESSIONID=00009uPxnDKezeigNMtvsXtEndq:1a8b7lgns; TS01d2eb62=01dc12c85e4ced61277c64a27d2fcd6b0fbf4a4eac861d0de2a0a4a04d3b4cacbc6119d8e05cf73aa82e63f2fecff21157e77dda601f396479682305d4643143d362f3efd4ee1e3499508dabdc60fab4e654aa4309'
+
+const headers = { 
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
+  Cookie,
+};
 
 const limitRows = 100; //default 100;
 var idTinh;
@@ -257,11 +259,7 @@ const configGetDistrictsAxios = cityId => {
   return {
   method: 'get',
   url: `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
-  headers: { 
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
-    'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
-  },
+  headers,
   httpsAgent: agent
 }
 }
@@ -270,11 +268,7 @@ const configGetWardsAxios = districtId => {
   return {
   method: 'get',
   url: `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue=${districtId}`,
-  headers: { 
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
-    'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
-  },
+  headers,
   httpsAgent: agent
 }
 }
