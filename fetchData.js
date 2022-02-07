@@ -15,6 +15,12 @@ const agent = new https.Agent({
 
 const options = { httpsAgent: agent }
 
+const headers = { 
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
+  'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
+}
+
 const urlCity = "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_TINH";
 const urlDistrict =
   "https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh="; // ma tinh
@@ -43,8 +49,11 @@ const fetchData = async id => {
   await getUrlsByCityId(id);
 };
 
+
+
 getUrlsByCityId = async cityId => {
    const resDistrict = await getDistricts(cityId);
+   console.log(48, resDistrict);
   const districts = resDistrict.data;
   await sleep(3000);
 
@@ -58,7 +67,7 @@ const getEntireXa = (index, districts, cityId) => {
     fetchEntireDataByUrls(0);
   } else {
     getWards(districts[index].id).then(res => {
-      console.log(index, cityId);
+      console.log(61, index, cityId);
 
       res.data.forEach(ward => {
         const url = `https://www.gdt.gov.vn/TTHKApp/jsp/results.jsp?maTinh=${cityId}&maHuyen=${districts[index].id}&maXa=${ward.id}&hoTen=&kyLb=01%2F2018&diaChi=&maSoThue=&searchType=10&uuid=9556e6b4-b766-44fc-82d8-87a26c70d9dc`;
@@ -244,18 +253,38 @@ function writeToExcel(rows, name) {
   console.log(244);
 }
 
+const configGetDistrictsAxios = cityId => {
+  return {
+  method: 'get',
+  url: `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
+  headers: { 
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
+    'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
+  },
+  httpsAgent: agent
+}
+}
+
+const configGetWardsAxios = districtId => {
+  return {
+  method: 'get',
+  url: `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue=${districtId}`,
+  headers: { 
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36', 
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9', 
+    'Cookie': 'D1N=b85d3b720d067346c455caa4cd246c2b; JSESSIONID=00003maX_lddSBv5p7dI6TG60Oy:1a5mljtv1; TS01d2eb62=01dc12c85ea4bbb2d94c7931c0593bf7ff145adbd6151aebda75f997c02c82a6762debda5172f7e9dc43a625e85ff72395adc289a9; TS01d2eb62=01dc12c85ef503cb31e0bc0bb8163d7505b50dfdca27d0a9f7a62a4aed28937f78115fb2cff6bcd7fae1918c180596f03bc5a67670dd4a3820d20f55faad06a172041cf493'
+  },
+  httpsAgent: agent
+}
+}
+
 const getDistricts = cityId => {
-  return axios.get(
-    `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
-    { httpsAgent: agent }
-  );
+  return axios(configGetDistrictsAxios(cityId));
 };
 
 const getWards = districtId => {
-  return axios.get(
-    `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_XA&maCQThue=${districtId}`,
-    { httpsAgent: agent }
-  );
+  return axios(configGetWardsAxios(districtId))
 };
 
 module.exports = fetchData;
