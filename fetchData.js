@@ -134,9 +134,10 @@ const fetchEntireUsersByUrlObject = async (pageNo, urlObject, urlIndex) => {
   await sleep(5000);
   try {
     const actualUrl = urlObject.url + `&pageNumber=${pageNo}`;
-    const htmlData = await axios.get(actualUrl,{ httpsAgent: agent });
+    const htmlData = await axios(configGetDataAxios(actualUrl));
 
     rows = await parseData(htmlData.data, urlObject);
+    console.log(140,rows)
     console.log("page: ", pageNo);
     if (!rows || [].concat(...rows).length === 0) {
       fetchEntireDataByUrls(urlIndex + 1);
@@ -272,6 +273,15 @@ const configGetCookieAxios = (cityId) => {
   method: 'get',
   url: `https://www.gdt.gov.vn/TTHKApp/jsp/json.jsp?cmd=GET_DS_HUYEN&maTinh=${cityId}`,
   headers: headersNotCokkie,
+  httpsAgent: agent
+}
+}
+
+const configGetDataAxios = actualUrl => {
+  return {
+  method: 'get',
+  url: actualUrl,
+  headers,
   httpsAgent: agent
 }
 }
